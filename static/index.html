@@ -3,18 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>双色球预测 - 神经网络预测系统</title>
+    <title>双色球预测系统 - 增强版</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>双色球预测系统</h1>
-            <p class="subtitle">基于神经网络的智能预测</p>
+            <h1>🎱 双色球神经网络预测系统</h1>
+            <p class="subtitle">基于LSTM的智能预测 | 可调参数 | 实时训练模拟</p>
         </header>
 
-        <section class="prediction-section">
+        <!-- 导航标签 -->
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="prediction">🔮 预测结果</button>
+            <button class="tab-btn" data-tab="history">📊 历史数据</button>
+            <button class="tab-btn" data-tab="training">🧠 神经网络训练</button>
+            <button class="tab-btn" data-tab="params">⚙️ 参数调整</button>
+        </nav>
+
+        <!-- 预测结果面板 -->
+        <section id="prediction" class="tab-panel active">
             <h2>下一期预测</h2>
             <div class="prediction-card">
                 <div class="issue-info">
@@ -22,64 +31,178 @@
                     <span id="next-issue" class="value">--</span>
                 </div>
                 <div class="numbers">
-                    <div class="red-balls">
-                        <span class="label">红球：</span>
-                        <div id="red-numbers" class="ball-container">
-                            <!-- 红球将在这里生成 -->
-                        </div>
+                    <div class="ball-group">
+                        <span class="label">红球（6个）：</span>
+                        <div id="red-numbers" class="ball-container"></div>
                     </div>
-                    <div class="blue-ball">
-                        <span class="label">蓝球：</span>
-                        <div id="blue-number" class="ball-container">
-                            <!-- 蓝球将在这里生成 -->
-                        </div>
+                    <div class="ball-group">
+                        <span class="label">蓝球（1个）：</span>
+                        <div id="blue-number" class="ball-container"></div>
                     </div>
                 </div>
-                <div class="prediction-time">
-                    <span class="label">预测时间：</span>
-                    <span id="prediction-time" class="value">--</span>
+                <div class="prediction-meta">
+                    <span>预测时间：<span id="prediction-time">--</span></span>
+                    <span>模型类型：<span id="model-type">LSTM</span></span>
+                </div>
+                <button id="btn-refresh-prediction" class="btn btn-primary">🔄 重新预测</button>
+            </div>
+        </section>
+
+        <!-- 历史数据面板 -->
+        <section id="history" class="tab-panel">
+            <h2>往期开奖数据</h2>
+            <div class="history-controls">
+                <input type="text" id="search-issue" placeholder="搜索期号...">
+                <select id="sort-order">
+                    <option value="desc">最新在前</option>
+                    <option value="asc">最早在前</option>
+                </select>
+                <span id="total-count">共 0 期</span>
+            </div>
+            <div id="history-list" class="history-list"></div>
+            <div class="pagination">
+                <button id="btn-prev" class="btn" disabled>上一页</button>
+                <span id="page-info">第 1 页</span>
+                <button id="btn-next" class="btn">下一页</button>
+            </div>
+        </section>
+
+        <!-- 神经网络训练面板 -->
+        <section id="training" class="tab-panel">
+            <h2>神经网络训练模拟</h2>
+            <div class="training-layout">
+                <div class="chart-section">
+                    <h3>训练曲线</h3>
+                    <canvas id="trainingChart"></canvas>
+                    <div id="training-status" class="training-status">
+                        <span>状态：就绪</span>
+                        <span>当前轮次：0/100</span>
+                    </div>
+                </div>
+                <div class="training-controls">
+                    <h3>训练控制</h3>
+                    <button id="btn-start-training" class="btn btn-primary">▶️ 开始训练</button>
+                    <button id="btn-stop-training" class="btn btn-danger" disabled>⏹️ 停止训练</button>
+                    <div class="training-log">
+                        <h4>训练日志</h4>
+                        <div id="training-log" class="log-box"></div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="chart-section">
-            <h2>模型训练历史</h2>
-            <div class="chart-container">
-                <canvas id="historyChart"></canvas>
+        <!-- 参数调整面板 -->
+        <section id="params" class="tab-panel">
+            <h2>模型参数调整</h2>
+            <div class="params-layout">
+                <div class="param-group">
+                    <h3>🏗️ 模型结构</h3>
+                    <div class="param-item">
+                        <label>LSTM-1 神经元数量</label>
+                        <input type="range" id="lstm1-units" min="32" max="256" value="128" step="32">
+                        <span id="lstm1-units-value">128</span>
+                    </div>
+                    <div class="param-item">
+                        <label>LSTM-2 神经元数量</label>
+                        <input type="range" id="lstm2-units" min="16" max="128" value="64" step="16">
+                        <span id="lstm2-units-value">64</span>
+                    </div>
+                    <div class="param-item">
+                        <label>Dense层神经元数量</label>
+                        <input type="range" id="dense-units" min="8" max="64" value="32" step="8">
+                        <span id="dense-units-value">32</span>
+                    </div>
+                    <div class="param-item">
+                        <label>Dropout比例</label>
+                        <input type="range" id="dropout-rate" min="0" max="0.5" value="0.2" step="0.1">
+                        <span id="dropout-rate-value">0.2</span>
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <h3>📚 训练参数</h3>
+                    <div class="param-item">
+                        <label>学习率</label>
+                        <input type="range" id="learning-rate" min="0.0001" max="0.01" value="0.001" step="0.0001">
+                        <span id="learning-rate-value">0.001</span>
+                    </div>
+                    <div class="param-item">
+                        <label>最大训练轮次</label>
+                        <input type="range" id="max-epochs" min="10" max="200" value="100" step="10">
+                        <span id="max-epochs-value">100</span>
+                    </div>
+                    <div class="param-item">
+                        <label>批大小</label>
+                        <input type="range" id="batch-size" min="8" max="128" value="32" step="8">
+                        <span id="batch-size-value">32</span>
+                    </div>
+                    <div class="param-item">
+                        <label>序列长度（回溯期数）</label>
+                        <input type="range" id="seq-length" min="5" max="30" value="10" step="5">
+                        <span id="seq-length-value">10</span>
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <h3>🎯 正则化参数</h3>
+                    <div class="param-item">
+                        <label>EarlyStopping 耐心值</label>
+                        <input type="range" id="early-patience" min="5" max="30" value="10" step="5">
+                        <span id="early-patience-value">10</span>
+                    </div>
+                    <div class="param-item">
+                        <label>学习率衰减因子</label>
+                        <input type="range" id="lr-decay-factor" min="0.1" max="0.9" value="0.5" step="0.1">
+                        <span id="lr-decay-factor-value">0.5</span>
+                    </div>
+                </div>
+
+                <div class="param-group">
+                    <h3>📋 参数预设</h3>
+                    <div class="preset-buttons">
+                        <button class="btn btn-preset" data-preset="default">默认参数</button>
+                        <button class="btn btn-preset" data-preset="conservative">保守（防过拟合）</button>
+                        <button class="btn btn-preset" data-preset="aggressive">激进（强学习）</button>
+                        <button class="btn btn-preset" data-preset="fast">快速训练</button>
+                    </div>
+                    <div class="param-summary">
+                        <h4>当前参数摘要</h4>
+                        <pre id="param-summary">--</pre>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <section class="history-section">
-            <h2>最近10期开奖号码</h2>
-            <div id="history-list" class="history-list">
-                <!-- 历史数据将在这里填充 -->
-            </div>
-        </section>
-
+        <!-- 模型信息 -->
         <section class="info-section">
-            <h2>模型信息</h2>
-            <div class="info-card">
-                <div class="info-item">
-                    <span class="label">模型类型：</span>
-                    <span id="model-type" class="value">LSTM</span>
+            <h2>📊 模型统计</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-total">--</div>
+                    <div class="stat-label">历史数据期数</div>
                 </div>
-                <div class="info-item">
-                    <span class="label">序列长度：</span>
-                    <span id="seq-length" class="value">10</span>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-params">--</div>
+                    <div class="stat-label">模型参数量</div>
                 </div>
-                <div class="info-item">
-                    <span class="label">特征数量：</span>
-                    <span id="feature-count" class="value">116</span>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-loss">--</div>
+                    <div class="stat-label">当前损失值</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-mae">--</div>
+                    <div class="stat-label">平均绝对误差</div>
                 </div>
             </div>
         </section>
 
         <footer>
-            <p>© 2026 双色球预测系统 | 仅供参考，不构成投资建议</p>
+            <p>© 2026 双色球预测系统 | 仅供参考，不构成投资建议 | 彩票有风险，投注需谨慎</p>
         </footer>
     </div>
 
     <script src="js/app.js"></script>
     <script src="js/chart.js"></script>
+    <script src="js/training.js"></script>
 </body>
 </html>
