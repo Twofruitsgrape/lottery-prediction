@@ -295,7 +295,7 @@ function updateStats(data) {
     document.getElementById('stat-mae').textContent = '0.0253';
 }
 
-// 重新预测按钮
+// 重新预测按钮 - 重新加载 prediction.json
 document.getElementById('btn-refresh-prediction')?.addEventListener('click', () => {
-    generateSamplePrediction();
+    loadPrediction();
 });
