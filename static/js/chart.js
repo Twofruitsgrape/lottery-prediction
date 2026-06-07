@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadTrainingHistory() {
     try {
         // 尝试从training_history.json加载数据
-        const response = await fetch('../model/training_history.json');
+        const response = await fetch('training_history.json');
         const data = await response.json();
         
         // 创建图表
