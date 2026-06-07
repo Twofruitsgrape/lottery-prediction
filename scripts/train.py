@@ -79,10 +79,15 @@ def main():
     print(f"\n测试集损失：{test_loss:.4f}")
     print(f"测试集MAE：{test_mae:.4f}")
     
-    # 保存模型
-    model_path = model_dir / 'lottery_model.h5'
+    # 保存模型（使用新的Keras格式）
+    model_path = model_dir / 'lottery_model.keras'
     model.save(model_path)
     print(f"\n模型已保存到：{model_path}")
+    
+    # 同时保存权重（兼容旧版本）
+    weights_path = model_dir / 'lottery_weights.weights.h5'
+    model.save_weights(weights_path)
+    print(f"权重已保存到：{weights_path}")
     
     # 保存训练历史
     history_path = model_dir / 'training_history.json'
