@@ -1,0 +1,18 @@
+{
+  "next_issue": "2026064",
+  "red_numbers": [
+    1,
+    2,
+    11,
+    15,
+    16,
+    28
+  ],
+  "blue_number": 13,
+  "timestamp": "2026-06-07T15:20:55.438721",
+  "model_info": {
+    "type": "LSTM",
+    "seq_length": 10,
+    "features": 116
+  }
+}
